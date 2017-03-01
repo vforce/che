@@ -5,18 +5,15 @@
     "rootDir": "src",
     "allowJs": true,
     "outDir": "lib",
-    "sourceMap": true
+    "sourceMap": true,
+    "removeComments": true
   },
+  "include": [
+    "src/**/*"
+  ],
   "exclude": [
-    "addons",
     "build",
-    "demo",
-    "dist",
-    "out",
-    "test",
     "node_modules",
-    "typings",
-    "target",
-    "./gulpfile.js"
+    "target"
   ]
 }

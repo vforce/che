@@ -1,6 +1,7 @@
 {
   "name": "xterm",
-  "version": "2.2.3",
+  "description": "Full xterm terminal, in your browser",
+  "version": "2.3.2",
   "ignore": [
     ".gitignore"
   ],
@@ -21,13 +22,15 @@
     "@types/node": "^6.0.41",
     "browserify": "^13.1.0",
     "gulp": "^3.9.1",
-    "gulp-rimraf": "0.2.1",
+    "sorcery": "^0.10.0",
     "gulp-sourcemaps": "2.4.0",
     "gulp-typescript": "3.1.4",
     "gulp-uglify": "^2.0.0",
-    "tsify": "^3.0.0",
+    "tsify": "^3.0.1",
+    "fs-extra": "^1.0.0",
     "typescript": "2.1.5",
     "vinyl-buffer": "^1.0.0",
+    "merge-stream": "^1.0.1",
     "vinyl-source-stream": "^1.1.0"
   },
   "scripts": {

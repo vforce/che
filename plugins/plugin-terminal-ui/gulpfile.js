@@ -1,61 +1,75 @@
-// include gulp
-var gulp = require('gulp');
-// Clean up lib and build folders
-var rimraf = require('gulp-rimraf');
-// Compile TypeScript
-var ts = require('gulp-typescript');
-// Include browserify plugin
-var browserify = require('browserify');
-//Generate source map to debug source files.
-var sourcemaps = require('gulp-sourcemaps');
-var source = require("vinyl-source-stream");
-var buffer = require('vinyl-buffer');
-//Browserify TypeScript file.
-var tsify = require('tsify');
-//Uglify js file.
+const browserify = require('browserify');
+const buffer = require('vinyl-buffer');
+const fs = require('fs-extra');
+const gulp = require('gulp');
+const merge = require('merge-stream');
+const sorcery = require('sorcery');
+const source = require('vinyl-source-stream');
+const sourcemaps = require('gulp-sourcemaps');
+const ts = require('gulp-typescript');
 var uglify = require('gulp-uglify');
 
-var tsProject = ts.createProject('tsconfig.json');
-var tsConfigOutDir = tsProject.config.compilerOptions.outDir;
-var buildDir = 'build';
+
+var buildDir = process.env.BUILD_DIR || 'build';
+
 
 /**
- * Clean up folders before build.
+ * Compile TypeScript sources to JavaScript files and create a source map file for each TypeScript
+ * file compiled.
  */
-gulp.task('clean', function () {
-  return gulp.src([tsConfigOutDir, buildDir], {read: false})
-    .pipe(rimraf());
+gulp.task('tsc', function () {
+  // Remove the lib/ directory to prevent confusion if files were devared in src/
+  fs.emptyDirSync('lib');
+
+  // Build all TypeScript files (including tests) to lib/, based on the configuration defined in
+  // `tsconfig.json`.
+  var tsProject = ts.createProject('tsconfig.json');
+  var tsResult = tsProject.src().pipe(sourcemaps.init()).pipe(tsProject());
+  var tsc = tsResult.js.pipe(sourcemaps.write('.', {includeContent: false, sourceRoot: ''})).pipe(gulp.dest('lib'));
+
+  // Copy all addons from src/ to lib/
+  var copyAddons = gulp.src('src/addons/**/*').pipe(gulp.dest('lib/addons'));
+
+  return merge(tsc, copyAddons);
 });
 
 /**
- * Browserify and uglify xterm.js script with addons to the build folder, generate source map
+ * Bundle JavaScript files produced by the `tsc` task, into a single file named `xterm.js` with
+ * Browserify.
  */
-gulp.task('browserify', function() {
-  // Single entry point to browserify
-  return browserifyTask = browserify({
-    debug : true,
-    standalone: "Terminal",
+gulp.task('browserify', ['tsc'], function() {
+  // Ensure that the build directory exists
+  fs.ensureDirSync(buildDir);
+
+  var browserifyOptions = {
     basedir: buildDir,
-    entries: ['../src/xterm.js', '../src/addons/fit/fit.js']
-  })
-    .plugin(tsify)
+    debug: true,
+    entries: ['../lib/xterm.js', '../lib/addons/fit/fit.js'],
+    standalone: 'Terminal',
+    cache: {},
+    packageCache: {}
+  };
+  return bundleStream = browserify(browserifyOptions)
     .bundle()
     .pipe(source('xterm.js'))
     .pipe(buffer())
-    .pipe(sourcemaps.init({loadMaps: true}))
+    .pipe(sourcemaps.init({loadMaps: true, sourceRoot: '..'}))
     .pipe(uglify())
-    .pipe(sourcemaps.write('./', {sourceRoot: '.'}))
-    .pipe(gulp.dest(buildDir))
+    .pipe(sourcemaps.write('./'))
+    .pipe(gulp.dest(buildDir));
 });
 
 /**
- * Main build task
+ * Use `sorcery` to resolve the source map chain and point back to the TypeScript files.
+ * (Without this task the source maps produced for the JavaScript bundle points into the
+ * compiled JavaScript files in lib/).
  */
-gulp.task('build', ['clean', 'browserify']);
-
-/**
- *  Default task clean temporaries directories and launch the main build task
- */
-gulp.task('default', function () {
-  return gulp.start('build');
+gulp.task('sorcery', ['browserify'], function () {
+  var chain = sorcery.loadSync(`${buildDir}/xterm.js`);
+  chain.apply();
+  chain.writeSync();
 });
+
+gulp.task('build', ['sorcery']);
+
+gulp.task('default', ['build']);

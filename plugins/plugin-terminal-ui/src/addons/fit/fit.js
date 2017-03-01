@@ -40,7 +40,6 @@
         elementPaddingHor = parseInt(elementStyle.getPropertyValue('padding-right')) + parseInt(elementStyle.getPropertyValue('padding-left')),
         availableHeight = parentElementHeight - elementPaddingVer,
         availableWidth = parentElementWidth - elementPaddingHor,
-        container = term.rowContainer,
         subjectRow = term.rowContainer.firstElementChild,
         contentBuffer = subjectRow.innerHTML,
         characterHeight,

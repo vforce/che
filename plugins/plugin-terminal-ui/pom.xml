@@ -56,6 +56,7 @@
                       <exclude>**/src/EventEmitter.js</exclude>
                       <exclude>**/src/xterm.js</exclude>
                       <exclude>**/src/Interfaces.ts</exclude>
+                      <exclude>**/**</exclude>
                     </excludes>
                 </configuration>
             </plugin>
