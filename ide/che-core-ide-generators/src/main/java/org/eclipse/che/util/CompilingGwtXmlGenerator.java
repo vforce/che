@@ -18,6 +18,7 @@ import org.reflections.util.FilterBuilder;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Set;
 
 import static org.eclipse.che.util.IgnoreUnExistedResourcesReflectionConfigurationBuilder.getConfigurationBuilder;
@@ -133,10 +134,12 @@ public class CompilingGwtXmlGenerator {
     public static class GwtXmlModuleSearcher {
         private final Set<String> excludePackages;
         private final Set<String> includePackages;
+        private final Set<URL>    urls;
 
-        public GwtXmlModuleSearcher(Set<String> excludePackages, Set<String> includePackages) {
+        public GwtXmlModuleSearcher(Set<String> excludePackages, Set<String> includePackages, Set<URL> urls) {
             this.excludePackages = excludePackages;
             this.includePackages = includePackages;
+            this.urls = urls;
         }
 
         /**
@@ -147,6 +150,7 @@ public class CompilingGwtXmlGenerator {
          */
         public Set<String> getGwtModulesFromClassPath() {
             ConfigurationBuilder configurationBuilder = getConfigurationBuilder();
+            configurationBuilder.addUrls(urls);
             FilterBuilder filterBuilder = new FilterBuilder();
             for (String excludePackage : excludePackages) {
                 filterBuilder.excludePackage(excludePackage);
