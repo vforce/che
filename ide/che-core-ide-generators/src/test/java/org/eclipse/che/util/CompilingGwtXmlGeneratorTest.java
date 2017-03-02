@@ -30,7 +30,7 @@ import java.util.Set;
 
 import static org.eclipse.che.util.CompilingGwtXmlGenerator.DEFAULT_GWT_ETNRY_POINT;
 import static org.eclipse.che.util.CompilingGwtXmlGenerator.DEFAULT_GWT_XML_PATH;
-import static org.eclipse.che.util.CompilingGwtXmlGenerator.DEFAULT_STYLESHEET;
+import static org.eclipse.che.util.CompilingGwtXmlGenerator.DEFAULT_STYLE_SHEET;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
@@ -116,7 +116,7 @@ public class CompilingGwtXmlGeneratorTest {
         assertEquals(inherits.size(), 1);
         assertEquals(inherits.get(0).getAttribute("name").getValue(), "org.mydomain.Printer");
         assertEquals(tree.getSingleElement("/module/stylesheet").getAttribute("src").getValue(),
-                     DEFAULT_STYLESHEET);
+                     DEFAULT_STYLE_SHEET);
         assertEquals(tree.getSingleElement("/module/entry-point").getAttribute("class").getValue(),
                      DEFAULT_GWT_ETNRY_POINT);
     }
@@ -152,7 +152,7 @@ public class CompilingGwtXmlGeneratorTest {
                                           testRoot,
                                           DEFAULT_GWT_XML_PATH,
                                           DEFAULT_GWT_ETNRY_POINT,
-                                          DEFAULT_STYLESHEET,
+                                          DEFAULT_STYLE_SHEET,
                                           false);
         CompilingGwtXmlGenerator gwtXmlGenerator = new CompilingGwtXmlGenerator(gwtXmlGeneratorConfig);
         //when
@@ -169,7 +169,7 @@ public class CompilingGwtXmlGeneratorTest {
                          .getAttribute("value").getValue(), "DISABLED");
 
     }
-    
+
     @Test
     public void shouldBeAbleToEnableLogging() throws IOException {
         //given
@@ -179,7 +179,7 @@ public class CompilingGwtXmlGeneratorTest {
                                           testRoot,
                                           DEFAULT_GWT_XML_PATH,
                                           DEFAULT_GWT_ETNRY_POINT,
-                                          DEFAULT_STYLESHEET,
+                                          DEFAULT_STYLE_SHEET,
                                           true);
         CompilingGwtXmlGenerator gwtXmlGenerator = new CompilingGwtXmlGenerator(gwtXmlGeneratorConfig);
         //when
@@ -197,5 +197,25 @@ public class CompilingGwtXmlGeneratorTest {
 
     }
 
+    @Test
+    public void shouldFindModulesAndGenerate() throws IOException {
+        //given
+        String[] args = new String[]{"--generationRoot=" + testRoot,
+                                     "--gwtFileName=com/myorg/My.gwt.xml",
+                                     "--includePackages=org.eclipse.che.api.testing",
+                                     "--includePackages=org.eclipse.che.api.core"
+        };
+        CompilingGwtXmlGenerator.main(args);
+        //when
+        File actual = new File(testRoot, "com/myorg/My.gwt.xml");
+        //then
+        XMLTree tree = XMLTree.from(actual);
+        List<Element> inherits = tree.getElements("/module/inherits");
+        assertEquals(inherits.size(), 3);
+        assertEquals(inherits.get(0).getAttribute("name").getValue(), "org.eclipse.che.api.testing.Testing");
+        assertEquals(inherits.get(1).getAttribute("name").getValue(), "org.eclipse.che.api.core.Core");
+        assertEquals(inherits.get(2).getAttribute("name").getValue(), "org.eclipse.che.api.core.model.Model");
+
+    }
 
 }

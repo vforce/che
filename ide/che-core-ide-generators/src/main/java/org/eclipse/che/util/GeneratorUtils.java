@@ -12,10 +12,10 @@ package org.eclipse.che.util;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -81,15 +81,15 @@ public class GeneratorUtils {
      *
      * @return Mapping of keys to values.
      */
-    public static Map<String, List<String>> parseArgs(String[] args) {
-        Map<String, List<String>> parsedArgs = new HashMap<>();
+    public static Map<String, Set<String>> parseArgs(String[] args) {
+        Map<String, Set<String>> parsedArgs = new HashMap<>();
         for (String arg : args) {
             int index = arg.indexOf("=");
             if (arg.startsWith("--") && index > 0) {
                 String key = arg.substring(2, index);
-                List<String> values = parsedArgs.get(key);
+                Set<String> values = parsedArgs.get(key);
                 if (values == null) {
-                    values = new ArrayList<>();
+                    values = new HashSet<>();
                     parsedArgs.put(key, values);
                 }
                 values.add(arg.substring(index + 1));

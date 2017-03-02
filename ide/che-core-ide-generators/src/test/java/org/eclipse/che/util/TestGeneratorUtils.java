@@ -15,8 +15,8 @@ import org.testng.annotations.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 
 import static org.testng.Assert.assertEquals;
@@ -89,12 +89,12 @@ public class TestGeneratorUtils {
         //given
         String[] args = new String[]{"--rootDir=/tmp/dir"};
         //when
-        Map<String, List<String>> actual = GeneratorUtils.parseArgs(args);
+        Map<String, Set<String>> actual = GeneratorUtils.parseArgs(args);
         //then
         assertEquals(actual.size(), 1);
-        List<String> values = actual.get("rootDir");
+        Set<String> values = actual.get("rootDir");
         assertEquals(values.size(), 1);
-        assertEquals(values.get(0), "/tmp/dir");
+        assertEquals(values.iterator().next(), "/tmp/dir");
     }
 
     @Test
@@ -102,12 +102,12 @@ public class TestGeneratorUtils {
         //given
         String[] args = new String[]{"--rootDir=/tmp/dir", "--par2=val2"};
         //when
-        Map<String, List<String>> actual = GeneratorUtils.parseArgs(args);
+        Map<String, Set<String>> actual = GeneratorUtils.parseArgs(args);
         //then
         assertEquals(actual.size(), 2);
-        List<String> values = actual.get("rootDir");
+        Set<String> values = actual.get("rootDir");
         assertEquals(values.size(), 1);
-        assertEquals(values.get(0), "/tmp/dir");
+        assertEquals(values.iterator().next(), "/tmp/dir");
     }
 
     @Test
@@ -115,7 +115,7 @@ public class TestGeneratorUtils {
         //given
         String[] args = new String[]{};
         //when
-        Map<String, List<String>> actual = GeneratorUtils.parseArgs(args);
+        Map<String, Set<String>> actual = GeneratorUtils.parseArgs(args);
         //then
         assertEquals(actual.size(), 0);
 
@@ -126,10 +126,10 @@ public class TestGeneratorUtils {
         //given
         String[] args = new String[]{"--rootDir=/tmp/dir", "--rootDir=/tmp/dir2", "--par2=val2"};
         //when
-        Map<String, List<String>> actual = GeneratorUtils.parseArgs(args);
+        Map<String, Set<String>> actual = GeneratorUtils.parseArgs(args);
         //then
         assertEquals(actual.size(), 2);
-        List<String> values = actual.get("rootDir");
+        Set<String> values = actual.get("rootDir");
         assertEquals(values.size(), 2);
         assertTrue(values.contains("/tmp/dir"));
         assertTrue(values.contains("/tmp/dir2"));

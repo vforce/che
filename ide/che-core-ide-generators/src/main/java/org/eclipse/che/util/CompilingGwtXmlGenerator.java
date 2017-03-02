@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.util;
 
+import com.google.common.collect.ImmutableSet;
+
 import org.apache.commons.io.FileUtils;
 import org.reflections.Reflections;
 import org.reflections.scanners.ResourcesScanner;
@@ -19,6 +21,8 @@ import org.reflections.util.FilterBuilder;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 
 import static org.eclipse.che.util.IgnoreUnExistedResourcesReflectionConfigurationBuilder.getConfigurationBuilder;
@@ -31,7 +35,7 @@ public class CompilingGwtXmlGenerator {
 
     public static final String DEFAULT_GWT_XML_PATH    = "org/eclipse/che/ide/IDE.gwt.xml";
     public static final String DEFAULT_GWT_ETNRY_POINT = "org.eclipse.che.ide.client.IDE";
-    public static final String DEFAULT_STYLESHEET      = "IDE.css";
+    public static final String DEFAULT_STYLE_SHEET     = "IDE.css";
 
     private final GwtXmlGeneratorConfig config;
 
@@ -78,16 +82,35 @@ public class CompilingGwtXmlGenerator {
      * @param args
      */
     public static void main(String[] args) {
+
         try {
-            File rootFolder = GeneratorUtils.getRootFolder(args);
             System.out.println(" ------------------------------------------------------------------------ ");
             System.out.println("Searching for GWT");
             System.out.println(" ------------------------------------------------------------------------ ");
+            Map<String, Set<String>> parsedArgs = GeneratorUtils.parseArgs(args);
 
-            // find all gwt.xml
-            //findGwtXml();
-            //generateGwtXml(rootFolder);
-            throw new IOException();
+            GwtXmlModuleSearcher searcher = new GwtXmlModuleSearcher(parsedArgs.getOrDefault("excludePackages",
+                                                                                             ImmutableSet.of("com.google",
+                                                                                                             "elemental",
+                                                                                                             "java.util",
+                                                                                                             "java.lang"
+                                                                                                            )),
+                                                                     parsedArgs.getOrDefault("includePackages", Collections.emptySet()),
+                                                                     Collections.emptySet());
+            Set<String> gwtModules = searcher.getGwtModulesFromClassPath();
+            System.out.println("Found " + gwtModules.size() + " gwt modules");
+
+
+            GwtXmlGeneratorConfig gwtXmlGeneratorConfig =
+                    new GwtXmlGeneratorConfig(gwtModules,
+                                              new File(getSingleValueOrDefault(parsedArgs, "generationRoot", ".")),
+                                              getSingleValueOrDefault(parsedArgs, "gwtFileName", DEFAULT_GWT_XML_PATH),
+                                              getSingleValueOrDefault(parsedArgs, "entryPoint", DEFAULT_GWT_ETNRY_POINT),
+                                              getSingleValueOrDefault(parsedArgs, "styleSheet", DEFAULT_STYLE_SHEET),
+                                              Boolean.parseBoolean(getSingleValueOrDefault(parsedArgs, "loggingEnabled", "false"))
+                    );
+            CompilingGwtXmlGenerator gwtXmlGenerator = new CompilingGwtXmlGenerator(gwtXmlGeneratorConfig);
+            gwtXmlGenerator.generateGwtXml();
         } catch (IOException e) {
             System.err.println(e.getMessage());
             // error
@@ -95,38 +118,11 @@ public class CompilingGwtXmlGenerator {
         }
     }
 
-//    private static void generateGwtXml(File rootFolder) throws IOException {
-//        File extManager = new File(rootFolder, GWT_XML_PATH);
-//        StringBuilder builder = new StringBuilder();
-//        builder.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>").append("\n");
-//        builder.append("<module rename-to='_app'>").append("\n");
-//        for (String getXmlLocation : gwtXml) {
-//            builder.append("    <inherits name=\"")
-//                   .append(getXmlLocation.replace("/", ".").substring(0, getXmlLocation.length() - 8))
-//                   .append("\"/>").append("\n");
-//        }
-//        builder.append("<stylesheet src=\"IDE.css\"/>").append("\n");
-//        builder.append("<entry-point class='org.eclipse.che.ide.client.IDE'/>").append("\n");
-//        builder.append("</module>").append("\n");
-//
-//        // flush content
-//        FileUtils.writeStringToFile(extManager, builder.toString());
-//    }
+    private static String getSingleValueOrDefault(Map<String, Set<String>> parsedArgs, String key, String defaultValue) {
+        Set<String> values = parsedArgs.get(key);
+        return values != null ? values.iterator().next() : defaultValue;
+    }
 
-//    private static void findGwtXml() {
-//        ConfigurationBuilder configurationBuilder = getConfigurationBuilder();
-//        configurationBuilder.setScanners(new ResourcesScanner())
-//                            .filterInputsBy(new FilterBuilder()
-//                                                    .excludePackage("com.google")
-//                                                    .excludePackage("elemental")
-//                                                    .excludePackage("java.util")
-//                                                    .excludePackage("java.lang"));
-//
-//        Reflections reflection = new Reflections(configurationBuilder);
-//        gwtXml.addAll(reflection.getResources(name -> name.endsWith(".gwt.xml")));
-//        gwtXml.forEach(System.out::println);
-//
-//    }
 
     /**
      * Class provides functionality of searching XXX.gwt.xml files in class path
@@ -150,14 +146,17 @@ public class CompilingGwtXmlGenerator {
          */
         public Set<String> getGwtModulesFromClassPath() {
             ConfigurationBuilder configurationBuilder = getConfigurationBuilder();
-            configurationBuilder.addUrls(urls);
-            FilterBuilder filterBuilder = new FilterBuilder();
-            for (String excludePackage : excludePackages) {
-                filterBuilder.excludePackage(excludePackage);
+            if (urls != null && urls.size() > 0) {
+                configurationBuilder.addUrls(urls);
             }
+            FilterBuilder filterBuilder = new FilterBuilder();
             for (String includePackage : includePackages) {
                 filterBuilder.includePackage(includePackage);
             }
+            for (String excludePackage : excludePackages) {
+                filterBuilder.excludePackage(excludePackage);
+            }
+
 
             configurationBuilder.setScanners(new ResourcesScanner()).filterInputsBy(filterBuilder);
 
@@ -196,7 +195,7 @@ public class CompilingGwtXmlGenerator {
 
         public GwtXmlGeneratorConfig(Set<String> gwtXmlModules,
                                      File generationRoot) {
-            this(gwtXmlModules, generationRoot, DEFAULT_GWT_XML_PATH, DEFAULT_GWT_ETNRY_POINT, DEFAULT_STYLESHEET, false);
+            this(gwtXmlModules, generationRoot, DEFAULT_GWT_XML_PATH, DEFAULT_GWT_ETNRY_POINT, DEFAULT_STYLE_SHEET, false);
         }
 
         public Set<String> getGwtXmlModules() {
