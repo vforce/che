@@ -28,6 +28,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import static org.eclipse.che.util.CompilingGwtXmlGenerator.DEFAULT_GWT_ETNRY_POINT;
+import static org.eclipse.che.util.CompilingGwtXmlGenerator.DEFAULT_GWT_XML_PATH;
+import static org.eclipse.che.util.CompilingGwtXmlGenerator.DEFAULT_STYLESHEET;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
@@ -113,9 +116,9 @@ public class CompilingGwtXmlGeneratorTest {
         assertEquals(inherits.size(), 1);
         assertEquals(inherits.get(0).getAttribute("name").getValue(), "org.mydomain.Printer");
         assertEquals(tree.getSingleElement("/module/stylesheet").getAttribute("src").getValue(),
-                     CompilingGwtXmlGenerator.DEFAULT_STYLESHEET);
+                     DEFAULT_STYLESHEET);
         assertEquals(tree.getSingleElement("/module/entry-point").getAttribute("class").getValue(),
-                     CompilingGwtXmlGenerator.DEFAULT_GWT_ETNRY_POINT);
+                     DEFAULT_GWT_ETNRY_POINT);
     }
 
     @Test
@@ -125,8 +128,8 @@ public class CompilingGwtXmlGeneratorTest {
         GwtXmlGeneratorConfig gwtXmlGeneratorConfig =
                 new GwtXmlGeneratorConfig(gwtModule,
                                           testRoot,
-                                          CompilingGwtXmlGenerator.DEFAULT_GWT_XML_PATH,
-                                          CompilingGwtXmlGenerator.DEFAULT_GWT_ETNRY_POINT,
+                                          DEFAULT_GWT_XML_PATH,
+                                          DEFAULT_GWT_ETNRY_POINT,
                                           "MyStylesheet.css",
                                           false);
         CompilingGwtXmlGenerator gwtXmlGenerator = new CompilingGwtXmlGenerator(gwtXmlGeneratorConfig);
@@ -138,6 +141,60 @@ public class CompilingGwtXmlGeneratorTest {
 
         assertEquals(tree.getSingleElement("/module/stylesheet").getAttribute("src").getValue(),
                      "MyStylesheet.css");
+    }
+
+    @Test
+    public void shouldBeAbleToDisableLogging() throws IOException {
+        //given
+        Set<String> gwtModule = ImmutableSet.of("org/mydomain/Printer.gwt.xml");
+        GwtXmlGeneratorConfig gwtXmlGeneratorConfig =
+                new GwtXmlGeneratorConfig(gwtModule,
+                                          testRoot,
+                                          DEFAULT_GWT_XML_PATH,
+                                          DEFAULT_GWT_ETNRY_POINT,
+                                          DEFAULT_STYLESHEET,
+                                          false);
+        CompilingGwtXmlGenerator gwtXmlGenerator = new CompilingGwtXmlGenerator(gwtXmlGeneratorConfig);
+        //when
+        File actual = gwtXmlGenerator.generateGwtXml();
+        //then
+        XMLTree tree = XMLTree.from(actual);
+
+
+        assertEquals(tree.getSingleElement("/module/set-property[@name='gwt.logging.consoleHandler']")
+                         .getAttribute("value").getValue(), "DISABLED");
+        assertEquals(tree.getSingleElement("/module/set-property[@name='gwt.logging.developmentModeHandler']")
+                         .getAttribute("value").getValue(), "DISABLED");
+        assertEquals(tree.getSingleElement("/module/set-property[@name='gwt.logging.simpleRemoteHandler']")
+                         .getAttribute("value").getValue(), "DISABLED");
+
+    }
+    
+    @Test
+    public void shouldBeAbleToEnableLogging() throws IOException {
+        //given
+        Set<String> gwtModule = ImmutableSet.of("org/mydomain/Printer.gwt.xml");
+        GwtXmlGeneratorConfig gwtXmlGeneratorConfig =
+                new GwtXmlGeneratorConfig(gwtModule,
+                                          testRoot,
+                                          DEFAULT_GWT_XML_PATH,
+                                          DEFAULT_GWT_ETNRY_POINT,
+                                          DEFAULT_STYLESHEET,
+                                          true);
+        CompilingGwtXmlGenerator gwtXmlGenerator = new CompilingGwtXmlGenerator(gwtXmlGeneratorConfig);
+        //when
+        File actual = gwtXmlGenerator.generateGwtXml();
+        //then
+        XMLTree tree = XMLTree.from(actual);
+
+
+        assertEquals(tree.getSingleElement("/module/set-property[@name='gwt.logging.consoleHandler']")
+                         .getAttribute("value").getValue(), "ENABLED");
+        assertEquals(tree.getSingleElement("/module/set-property[@name='gwt.logging.developmentModeHandler']")
+                         .getAttribute("value").getValue(), "ENABLED");
+        assertEquals(tree.getSingleElement("/module/set-property[@name='gwt.logging.simpleRemoteHandler']")
+                         .getAttribute("value").getValue(), "ENABLED");
+
     }
 
 
