@@ -10,13 +10,13 @@
  *******************************************************************************/
 package org.eclipse.che.util;
 
-import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Files;
 
 import org.eclipse.che.commons.lang.IoUtil;
 import org.eclipse.che.commons.xml.Element;
 import org.eclipse.che.commons.xml.XMLTree;
+import org.eclipse.che.commons.xml.XMLTreeException;
 import org.eclipse.che.util.CompilingGwtXmlGenerator.GwtXmlGeneratorConfig;
 import org.eclipse.che.util.CompilingGwtXmlGenerator.GwtXmlModuleSearcher;
 import org.testng.annotations.AfterMethod;
@@ -34,6 +34,7 @@ import static org.eclipse.che.util.CompilingGwtXmlGenerator.DEFAULT_GWT_XML_PATH
 import static org.eclipse.che.util.CompilingGwtXmlGenerator.DEFAULT_STYLE_SHEET;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
 public class CompilingGwtXmlGeneratorTest {
@@ -160,14 +161,10 @@ public class CompilingGwtXmlGeneratorTest {
         File actual = gwtXmlGenerator.generateGwtXml();
         //then
         XMLTree tree = XMLTree.from(actual);
-
-
-        assertEquals(tree.getSingleElement("/module/set-property[@name='gwt.logging.consoleHandler']")
-                         .getAttribute("value").getValue(), "DISABLED");
-        assertEquals(tree.getSingleElement("/module/set-property[@name='gwt.logging.developmentModeHandler']")
-                         .getAttribute("value").getValue(), "DISABLED");
-        assertEquals(tree.getSingleElement("/module/set-property[@name='gwt.logging.simpleRemoteHandler']")
-                         .getAttribute("value").getValue(), "DISABLED");
+        assertNotExists(tree, "/module/inherits[@name='com.google.gwt.logging.Logging']");
+        assertNotExists(tree, "/module/set-property[@name='gwt.logging.consoleHandler']");
+        assertNotExists(tree, "/module/set-property[@name='gwt.logging.developmentModeHandler']");
+        assertNotExists(tree, "/module/set-property[@name='gwt.logging.simpleRemoteHandler']");
 
     }
 
@@ -187,14 +184,14 @@ public class CompilingGwtXmlGeneratorTest {
         File actual = gwtXmlGenerator.generateGwtXml();
         //then
         XMLTree tree = XMLTree.from(actual);
-
+        assertExists(tree, "/module/inherits[@name='com.google.gwt.logging.Logging']");
 
         assertEquals(tree.getSingleElement("/module/set-property[@name='gwt.logging.consoleHandler']")
                          .getAttribute("value").getValue(), "ENABLED");
         assertEquals(tree.getSingleElement("/module/set-property[@name='gwt.logging.developmentModeHandler']")
                          .getAttribute("value").getValue(), "ENABLED");
         assertEquals(tree.getSingleElement("/module/set-property[@name='gwt.logging.simpleRemoteHandler']")
-                         .getAttribute("value").getValue(), "ENABLED");
+                         .getAttribute("value").getValue(), "DISABLED");
 
     }
 
@@ -213,10 +210,23 @@ public class CompilingGwtXmlGeneratorTest {
         XMLTree tree = XMLTree.from(actual);
         List<Element> inherits = tree.getElements("/module/inherits");
         assertEquals(inherits.size(), 3);
-        assertEquals(inherits.get(0).getAttribute("name").getValue(), "org.eclipse.che.api.testing.Testing");
-        assertEquals(inherits.get(1).getAttribute("name").getValue(), "org.eclipse.che.api.core.Core");
-        assertEquals(inherits.get(2).getAttribute("name").getValue(), "org.eclipse.che.api.core.model.Model");
+        assertEquals(inherits.get(0).getAttribute("name").getValue(), "org.eclipse.che.api.core.Core");
+        assertEquals(inherits.get(1).getAttribute("name").getValue(), "org.eclipse.che.api.core.model.Model");
+        assertEquals(inherits.get(2).getAttribute("name").getValue(), "org.eclipse.che.api.testing.Testing");
 
     }
+
+    public static void assertNotExists(XMLTree tree, String xpath) {
+        try {
+            tree.getSingleElement(xpath);
+        } catch (XMLTreeException e) {
+            assertEquals(e.getLocalizedMessage(), "Required list with one element");
+        }
+    }
+
+    public static void assertExists(XMLTree tree, String xpath) {
+        assertNotNull(tree.getSingleElement(xpath));
+    }
+
 
 }

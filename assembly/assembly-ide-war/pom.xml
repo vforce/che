@@ -354,6 +354,7 @@
                             <mainClass>org.eclipse.che.util.CompilingGwtXmlGenerator</mainClass>
                             <arguments>
                                 <argument>--rootDir=${generated.sources.directory}</argument>
+                                <argument>--loggingEnabled=true</argument>
                             </arguments>
                         </configuration>
                     </execution>

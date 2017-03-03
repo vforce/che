@@ -26,6 +26,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -165,7 +166,7 @@ public class CompilingGwtXmlGenerator {
             configurationBuilder.setScanners(new ResourcesScanner()).filterInputsBy(filterBuilder);
 
             Reflections reflection = new Reflections(configurationBuilder);
-            return reflection.getResources(name -> name.endsWith(".gwt.xml"));
+            return new TreeSet<>(reflection.getResources(name -> name.endsWith(".gwt.xml")));
 
         }
     }
@@ -210,7 +211,7 @@ public class CompilingGwtXmlGenerator {
             return gwtXmlModules
                     .stream()
                     .map(gwtModule -> gwtModule.replace("/", ".").substring(0, gwtModule.length() - 8))
-                    .collect(Collectors.toSet());
+                    .collect(Collectors.toCollection(TreeSet::new));
         }
 
         public File getGenerationRoot() {
