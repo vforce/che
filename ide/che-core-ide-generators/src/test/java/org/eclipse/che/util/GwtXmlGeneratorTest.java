@@ -17,8 +17,8 @@ import org.eclipse.che.commons.lang.IoUtil;
 import org.eclipse.che.commons.xml.Element;
 import org.eclipse.che.commons.xml.XMLTree;
 import org.eclipse.che.commons.xml.XMLTreeException;
-import org.eclipse.che.util.CompilingGwtXmlGenerator.GwtXmlGeneratorConfig;
-import org.eclipse.che.util.CompilingGwtXmlGenerator.GwtXmlModuleSearcher;
+import org.eclipse.che.util.GwtXmlGenerator.GwtXmlGeneratorConfig;
+import org.eclipse.che.util.GwtXmlGenerator.GwtXmlModuleSearcher;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -29,15 +29,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import static org.eclipse.che.util.CompilingGwtXmlGenerator.DEFAULT_GWT_ETNRY_POINT;
-import static org.eclipse.che.util.CompilingGwtXmlGenerator.DEFAULT_GWT_XML_PATH;
-import static org.eclipse.che.util.CompilingGwtXmlGenerator.DEFAULT_STYLE_SHEET;
+import static org.eclipse.che.util.GwtXmlGenerator.DEFAULT_GWT_ETNRY_POINT;
+import static org.eclipse.che.util.GwtXmlGenerator.DEFAULT_GWT_XML_PATH;
+import static org.eclipse.che.util.GwtXmlGenerator.DEFAULT_STYLE_SHEET;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
-public class CompilingGwtXmlGeneratorTest {
+public class GwtXmlGeneratorTest {
 
     File testRoot;
 
@@ -57,7 +57,7 @@ public class CompilingGwtXmlGeneratorTest {
         Set<String> excludePackages = Collections.emptySet();
         Set<String> includePackages = Collections.emptySet();
         GwtXmlModuleSearcher searcher = new GwtXmlModuleSearcher(excludePackages, includePackages, ImmutableSet
-                .of(CompilingGwtXmlGeneratorTest.class.getProtectionDomain().getCodeSource().getLocation()));
+                .of(GwtXmlGeneratorTest.class.getProtectionDomain().getCodeSource().getLocation()));
 
         //when
         Set<String> actual = searcher.getGwtModulesFromClassPath();
@@ -71,7 +71,7 @@ public class CompilingGwtXmlGeneratorTest {
         Set<String> excludePackages = Collections.emptySet();
         Set<String> includePackages = ImmutableSet.of("elemental");
         GwtXmlModuleSearcher searcher = new GwtXmlModuleSearcher(excludePackages, includePackages, ImmutableSet
-                .of(CompilingGwtXmlGeneratorTest.class.getProtectionDomain().getCodeSource().getLocation()));
+                .of(GwtXmlGeneratorTest.class.getProtectionDomain().getCodeSource().getLocation()));
 
         //when
         Set<String> actual = searcher.getGwtModulesFromClassPath();
@@ -91,7 +91,7 @@ public class CompilingGwtXmlGeneratorTest {
         Set<String> excludePackages = ImmutableSet.of("elemental");
         Set<String> includePackages = Collections.emptySet();
         GwtXmlModuleSearcher searcher = new GwtXmlModuleSearcher(excludePackages, includePackages, ImmutableSet
-                .of(CompilingGwtXmlGeneratorTest.class.getProtectionDomain().getCodeSource().getLocation()));
+                .of(GwtXmlGeneratorTest.class.getProtectionDomain().getCodeSource().getLocation()));
         //when
         Set<String> actual = searcher.getGwtModulesFromClassPath();
         //then
@@ -107,7 +107,7 @@ public class CompilingGwtXmlGeneratorTest {
         Set<String> gwtModule = ImmutableSet.of("org/mydomain/Printer.gwt.xml");
         GwtXmlGeneratorConfig gwtXmlGeneratorConfig =
                 new GwtXmlGeneratorConfig(gwtModule, testRoot);
-        CompilingGwtXmlGenerator gwtXmlGenerator = new CompilingGwtXmlGenerator(gwtXmlGeneratorConfig);
+        GwtXmlGenerator gwtXmlGenerator = new GwtXmlGenerator(gwtXmlGeneratorConfig);
         //when
         File actual = gwtXmlGenerator.generateGwtXml();
         //then
@@ -134,7 +134,7 @@ public class CompilingGwtXmlGeneratorTest {
                                           DEFAULT_GWT_ETNRY_POINT,
                                           "MyStylesheet.css",
                                           false);
-        CompilingGwtXmlGenerator gwtXmlGenerator = new CompilingGwtXmlGenerator(gwtXmlGeneratorConfig);
+        GwtXmlGenerator gwtXmlGenerator = new GwtXmlGenerator(gwtXmlGeneratorConfig);
         //when
         File actual = gwtXmlGenerator.generateGwtXml();
         //then
@@ -156,7 +156,7 @@ public class CompilingGwtXmlGeneratorTest {
                                           DEFAULT_GWT_ETNRY_POINT,
                                           DEFAULT_STYLE_SHEET,
                                           false);
-        CompilingGwtXmlGenerator gwtXmlGenerator = new CompilingGwtXmlGenerator(gwtXmlGeneratorConfig);
+        GwtXmlGenerator gwtXmlGenerator = new GwtXmlGenerator(gwtXmlGeneratorConfig);
         //when
         File actual = gwtXmlGenerator.generateGwtXml();
         //then
@@ -179,7 +179,7 @@ public class CompilingGwtXmlGeneratorTest {
                                           DEFAULT_GWT_ETNRY_POINT,
                                           DEFAULT_STYLE_SHEET,
                                           true);
-        CompilingGwtXmlGenerator gwtXmlGenerator = new CompilingGwtXmlGenerator(gwtXmlGeneratorConfig);
+        GwtXmlGenerator gwtXmlGenerator = new GwtXmlGenerator(gwtXmlGeneratorConfig);
         //when
         File actual = gwtXmlGenerator.generateGwtXml();
         //then
@@ -203,7 +203,7 @@ public class CompilingGwtXmlGeneratorTest {
                                      "--includePackages=org.eclipse.che.api.testing",
                                      "--includePackages=org.eclipse.che.api.core"
         };
-        CompilingGwtXmlGenerator.main(args);
+        GwtXmlGenerator.main(args);
         //when
         File actual = new File(testRoot, "com/myorg/My.gwt.xml");
         //then

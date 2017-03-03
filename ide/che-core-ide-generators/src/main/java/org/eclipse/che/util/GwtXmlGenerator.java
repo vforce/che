@@ -36,13 +36,13 @@ import static org.eclipse.che.util.IgnoreUnExistedResourcesReflectionConfigurati
  * Generates uber IDE.gwt.xml from part found in class path.
  * @author Sergii Kabashniuk
  */
-public class CompilingGwtXmlGenerator {
+public class GwtXmlGenerator {
 
     /**
      * Name of the template
      */
     public static final String TEMPLATE_NAME =
-            "/".concat(CompilingGwtXmlGenerator.class.getPackage().getName().replace(".", "/")).concat("/gwt.xml.template");
+            "/".concat(GwtXmlGenerator.class.getPackage().getName().replace(".", "/")).concat("/gwt.xml.template");
 
     public static final String DEFAULT_GWT_XML_PATH    = "org/eclipse/che/ide/IDE.gwt.xml";
     public static final String DEFAULT_GWT_ETNRY_POINT = "org.eclipse.che.ide.client.IDE";
@@ -50,7 +50,7 @@ public class CompilingGwtXmlGenerator {
 
     private final GwtXmlGeneratorConfig config;
 
-    public CompilingGwtXmlGenerator(GwtXmlGeneratorConfig config) {
+    public GwtXmlGenerator(GwtXmlGeneratorConfig config) {
         this.config = config;
     }
 
@@ -72,7 +72,7 @@ public class CompilingGwtXmlGenerator {
      * @return the String Template
      */
     protected ST getTemplate() {
-        URL url = Resources.getResource(CompilingGwtXmlGenerator.class, TEMPLATE_NAME);
+        URL url = Resources.getResource(GwtXmlGenerator.class, TEMPLATE_NAME);
         try {
             return new ST(Resources.toString(url, UTF_8), '$', '$');
         } catch (IOException e) {
@@ -114,7 +114,7 @@ public class CompilingGwtXmlGenerator {
                                               getSingleValueOrDefault(parsedArgs, "styleSheet", DEFAULT_STYLE_SHEET),
                                               Boolean.parseBoolean(getSingleValueOrDefault(parsedArgs, "loggingEnabled", "false"))
                     );
-            CompilingGwtXmlGenerator gwtXmlGenerator = new CompilingGwtXmlGenerator(gwtXmlGeneratorConfig);
+            GwtXmlGenerator gwtXmlGenerator = new GwtXmlGenerator(gwtXmlGeneratorConfig);
             gwtXmlGenerator.generateGwtXml();
         } catch (IOException e) {
             System.err.println(e.getMessage());
