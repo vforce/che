@@ -351,7 +351,7 @@
                             <goal>java</goal>
                         </goals>
                         <configuration>
-                            <mainClass>org.eclipse.che.util.CompilingGwtXmlGenerator</mainClass>
+                            <mainClass>org.eclipse.che.util.GwtXmlGenerator</mainClass>
                             <arguments>
                                 <argument>--rootDir=${generated.sources.directory}</argument>
                                 <argument>--loggingEnabled=true</argument>
