@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module rename-to='_app'>
-$config.gwtModules: { module |     <inherits name="$module$"/>}$
+$config.gwtModules: { module |     <inherits name="$module$"/>
+}$
     <stylesheet src="$config.stylesheet$"/>
     <entry-point class="$config.entryPoint$"/>
     <set-property name="gwt.logging.simpleRemoteHandler" value="$if(config.loggingEnabled)$ENABLED$else$DISABLED$endif$"/>
