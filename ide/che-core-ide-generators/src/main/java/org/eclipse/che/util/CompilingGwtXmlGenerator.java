@@ -103,7 +103,7 @@ public class CompilingGwtXmlGenerator {
 
             GwtXmlGeneratorConfig gwtXmlGeneratorConfig =
                     new GwtXmlGeneratorConfig(gwtModules,
-                                              new File(getSingleValueOrDefault(parsedArgs, "generationRoot", ".")),
+                                              new File(getSingleValueOrDefault(parsedArgs, "rootDir", ".")),
                                               getSingleValueOrDefault(parsedArgs, "gwtFileName", DEFAULT_GWT_XML_PATH),
                                               getSingleValueOrDefault(parsedArgs, "entryPoint", DEFAULT_GWT_ETNRY_POINT),
                                               getSingleValueOrDefault(parsedArgs, "styleSheet", DEFAULT_STYLE_SHEET),

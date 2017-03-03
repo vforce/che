@@ -200,7 +200,7 @@ public class CompilingGwtXmlGeneratorTest {
     @Test
     public void shouldFindModulesAndGenerate() throws IOException {
         //given
-        String[] args = new String[]{"--generationRoot=" + testRoot,
+        String[] args = new String[]{"--rootDir=" + testRoot,
                                      "--gwtFileName=com/myorg/My.gwt.xml",
                                      "--includePackages=org.eclipse.che.api.testing",
                                      "--includePackages=org.eclipse.che.api.core"
