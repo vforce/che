@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.util;
 
+import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Files;
 

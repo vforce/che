@@ -11,12 +11,14 @@
 package org.eclipse.che.util;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.io.Resources;
 
 import org.apache.commons.io.FileUtils;
 import org.reflections.Reflections;
 import org.reflections.scanners.ResourcesScanner;
 import org.reflections.util.ConfigurationBuilder;
 import org.reflections.util.FilterBuilder;
+import org.stringtemplate.v4.ST;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,7 +26,9 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.eclipse.che.util.IgnoreUnExistedResourcesReflectionConfigurationBuilder.getConfigurationBuilder;
 
 /**
@@ -32,6 +36,12 @@ import static org.eclipse.che.util.IgnoreUnExistedResourcesReflectionConfigurati
  * @author Sergii Kabashniuk
  */
 public class CompilingGwtXmlGenerator {
+
+    /**
+     * Name of the template
+     */
+    public static final String TEMPLATE_NAME =
+            "/".concat(CompilingGwtXmlGenerator.class.getPackage().getName().replace(".", "/")).concat("/gwt.xml.template");
 
     public static final String DEFAULT_GWT_XML_PATH    = "org/eclipse/che/ide/IDE.gwt.xml";
     public static final String DEFAULT_GWT_ETNRY_POINT = "org.eclipse.che.ide.client.IDE";
@@ -48,33 +58,27 @@ public class CompilingGwtXmlGenerator {
         if (gwtXml.isDirectory() || gwtXml.exists()) {
             throw new IOException(gwtXml.getAbsolutePath() + " already exists or directory");
         }
-        StringBuilder builder = new StringBuilder();
-        builder.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>").append("\n");
-        builder.append("<module rename-to='_app'>").append("\n");
-        for (String gwtModule : config.getGwtXmlModules()) {
-            builder.append("    <inherits name=\"")
-                   .append(gwtModule.replace("/", ".").substring(0, gwtModule.length() - 8))
-                   .append("\"/>").append("\n");
-        }
-        builder.append("    <stylesheet src=\"").append(config.getStylesheet()).append("\"/>").append("\n");
-        builder.append("    <entry-point class='").append(config.getEntryPoint()).append("'/>").append("\n");
-        if (config.isLoggingEnabled()) {
-            builder.append("    <set-property name=\"gwt.logging.simpleRemoteHandler\" value=\"ENABLED\"/>").append("\n");
-            builder.append("    <set-property name=\"gwt.logging.developmentModeHandler\" value=\"ENABLED\"/>").append("\n");
-            builder.append("    <set-property name=\"gwt.logging.consoleHandler\" value=\"ENABLED\"/>").append("\n");
-        } else {
-            builder.append("    <set-property name=\"gwt.logging.simpleRemoteHandler\" value=\"DISABLED\"/>").append("\n");
-            builder.append("    <set-property name=\"gwt.logging.developmentModeHandler\" value=\"DISABLED\"/>").append("\n");
-            builder.append("    <set-property name=\"gwt.logging.consoleHandler\" value=\"DISABLED\"/>").append("\n");
-
-        }
-        builder.append("</module>").append("\n");
-
+        ST template = getTemplate();
+        template.add("config", config);
         // flush content
-        FileUtils.writeStringToFile(gwtXml, builder.toString());
+        FileUtils.writeStringToFile(gwtXml, template.render());
         return gwtXml;
     }
 
+
+    /**
+     * Get the template for typescript
+     * @return the String Template
+     */
+    protected ST getTemplate() {
+        URL url = Resources.getResource(CompilingGwtXmlGenerator.class, TEMPLATE_NAME);
+        try {
+            return new ST(Resources.toString(url, UTF_8), '$', '$');
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Unable to read template", e);
+        }
+
+    }
 
     /**
      * Entry point. --rootDir is the optional parameter.
@@ -200,6 +204,13 @@ public class CompilingGwtXmlGenerator {
 
         public Set<String> getGwtXmlModules() {
             return gwtXmlModules;
+        }
+
+        public Set<String> getGwtModules() {
+            return gwtXmlModules
+                    .stream()
+                    .map(gwtModule -> gwtModule.replace("/", ".").substring(0, gwtModule.length() - 8))
+                    .collect(Collectors.toSet());
         }
 
         public File getGenerationRoot() {
