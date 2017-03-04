@@ -103,6 +103,7 @@ public class GwtXmlGenerator {
                                                                      parsedArgs.getOrDefault("includePackages", Collections.emptySet()),
                                                                      Collections.emptySet());
             Set<String> gwtModules = searcher.getGwtModulesFromClassPath();
+            gwtModules.forEach(System.out::println);
             System.out.println("Found " + gwtModules.size() + " gwt modules");
 
 
