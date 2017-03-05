@@ -124,6 +124,7 @@ initModule.run(['$rootScope', '$location', '$routeParams', 'routingRedirect', '$
     routeHistory;
 
     $rootScope.$on('$viewContentLoaded', () => {
+      cheUIElementsInjectorService.addElementForInjection('dashboardPageContent', 'recentWorkspaces', '<dashboard-last-workspaces></dashboard-last-workspaces>');
       cheUIElementsInjectorService.injectAll();
       $timeout(() => {
         if (!$rootScope.hideLoader) {
