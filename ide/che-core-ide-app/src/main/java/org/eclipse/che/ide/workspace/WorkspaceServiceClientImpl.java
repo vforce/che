@@ -17,7 +17,6 @@ import org.eclipse.che.api.machine.shared.dto.CommandDto;
 import org.eclipse.che.api.machine.shared.dto.MachineConfigDto;
 import org.eclipse.che.api.machine.shared.dto.SnapshotDto;
 import org.eclipse.che.api.promises.client.Function;
-import org.eclipse.che.api.promises.client.FunctionException;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.workspace.shared.dto.EnvironmentDto;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
@@ -32,9 +31,9 @@ import org.eclipse.che.ide.ui.loaders.request.LoaderFactory;
 
 import javax.validation.constraints.NotNull;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.google.gwt.http.client.RequestBuilder.PUT;
+import static java.util.stream.Collectors.toList;
 import static org.eclipse.che.ide.MimeType.APPLICATION_JSON;
 import static org.eclipse.che.ide.rest.HTTPHeader.ACCEPT;
 import static org.eclipse.che.ide.rest.HTTPHeader.CONTENT_TYPE;
@@ -99,17 +98,12 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
 
     @Override
     public Promise<List<WorkspaceDto>> getWorkspaces(final int skip, final int limit) {
-        return fetchWorkspaces().then(new Function<List<WorkspaceDto>, List<WorkspaceDto>>() {
-            @Override
-            public List<WorkspaceDto> apply(List<WorkspaceDto> arg) throws FunctionException {
-                return arg.stream().collect(Collectors.toList());
-            }
-        });
+        return fetchWorkspaces().then((Function<List<WorkspaceDto>, List<WorkspaceDto>>)workspaceDtoList ->
+                workspaceDtoList.stream().collect(toList()));
     }
 
     private Promise<List<WorkspaceDto>> fetchWorkspaces() {
-        final String url = baseHttpUrl;
-        return asyncRequestFactory.createGetRequest(url)
+        return asyncRequestFactory.createGetRequest(baseHttpUrl)
                                   .header(ACCEPT, APPLICATION_JSON)
                                   .loader(loaderFactory.newLoader("Getting info about workspaces..."))
                                   .send(dtoUnmarshallerFactory.newListUnmarshaller(WorkspaceDto.class));
@@ -161,13 +155,17 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
     }
 
     @Override
+    public Promise<Void> stop(String wsId, boolean createSnapshot) {
+        final String url = baseHttpUrl + "/" + wsId + "/runtime?create-snapshot=" + createSnapshot;
+
+        return asyncRequestFactory.createDeleteRequest(url)
+                                  .loader(loaderFactory.newLoader("Stopping workspace..."))
+                                  .send();
+    }
+
+    @Override
     public Promise<List<CommandDto>> getCommands(String wsId) {
-        return getWorkspace(wsId).then(new Function<WorkspaceDto, List<CommandDto>>() {
-            @Override
-            public List<CommandDto> apply(WorkspaceDto arg) throws FunctionException {
-                return arg.getConfig().getCommands();
-            }
-        });
+        return getWorkspace(wsId).then((Function<WorkspaceDto, List<CommandDto>>)workspaceDto -> workspaceDto.getConfig().getCommands());
     }
 
     @Override
