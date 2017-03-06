@@ -23,6 +23,16 @@
             border: solid 0.6px #454545;
         }
 
+        .widget:hover {
+            color: #53a2ff;
+            background-image: linear-gradient(to bottom, #3d3d3d, #1d1d1d 98%);
+        }
+
+        .widget:active {
+            color: #235c9e;
+            background-image: linear-gradient(to bottom, #3d3d3d, #1d1d1d);
+        }
+
         .selectedItemPanel {
             float: left;
             width: literal("calc(100% - 40px)");

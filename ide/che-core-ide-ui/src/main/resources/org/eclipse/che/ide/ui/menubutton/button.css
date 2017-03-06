@@ -11,15 +11,14 @@
 .button {
     width: 32px;
     height: 22px;
+    color: #4990e2;
     background-image: linear-gradient(to bottom, #444444, #343434 98%);
     border: solid 0.6px #454545;
     font-size: 17px;
     font-weight: normal;
     font-style: normal;
     font-stretch: normal;
-    color: #4eabff;
     text-align: center;
-    transition: background-image 0.5s;
     cursor: pointer;
 }
 
@@ -28,8 +27,13 @@
 }
 
 .button:hover {
-    background-image: linear-gradient(to bottom, #444444, #343434 98%);
-    transition: background-image 0.5s;
+    color: #53a2ff;
+    background-image: linear-gradient(to bottom, #3d3d3d, #1d1d1d 98%);
+}
+
+.button:active {
+    color: #235c9e;
+    background-image: linear-gradient(to bottom, #3d3d3d, #1d1d1d);
 }
 
 .popupPanel {
