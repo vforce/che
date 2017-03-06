@@ -34,7 +34,7 @@ import org.eclipse.che.api.workspace.shared.dto.WorkspaceDto;
 import org.eclipse.che.api.workspace.shared.dto.event.WorkspaceStatusEvent;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.DelayedTask;
-import org.eclipse.che.ide.actions.WorkspaceSnapshotCreator;
+import org.eclipse.che.ide.actions.WorkspaceSnapshotNotifier;
 import org.eclipse.che.ide.api.component.Component;
 import org.eclipse.che.ide.api.dialogs.ConfirmCallback;
 import org.eclipse.che.ide.api.dialogs.DialogFactory;
@@ -94,7 +94,7 @@ public class WorkspaceEventsHandler {
     private final Provider<MachineManager>            machineManagerProvider;
     private final Provider<DefaultWorkspaceComponent> wsComponentProvider;
     private final AsyncRequestFactory                 asyncRequestFactory;
-    private final WorkspaceSnapshotCreator            snapshotCreator;
+    private final WorkspaceSnapshotNotifier           snapshotNotifier;
     private final WorkspaceServiceClient              workspaceServiceClient;
     private final StartWorkspaceNotification          startWorkspaceNotification;
     private final ExecAgentCommandManager             execAgentCommandManager;
@@ -127,7 +127,7 @@ public class WorkspaceEventsHandler {
                            final NotificationManager notificationManager,
                            final MessageBusProvider messageBusProvider,
                            final Provider<MachineManager> machineManagerProvider,
-                           final WorkspaceSnapshotCreator snapshotCreator,
+                           final WorkspaceSnapshotNotifier snapshotNotifier,
                            final WorkspaceServiceClient workspaceServiceClient,
                            final StartWorkspaceNotification startWorkspaceNotification,
                            final Provider<DefaultWorkspaceComponent> wsComponentProvider,
@@ -137,7 +137,7 @@ public class WorkspaceEventsHandler {
         this.eventBus = eventBus;
         this.locale = locale;
         this.messageBusProvider = messageBusProvider;
-        this.snapshotCreator = snapshotCreator;
+        this.snapshotNotifier = snapshotNotifier;
         this.notificationManager = notificationManager;
         this.dialogFactory = dialogFactory;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
@@ -422,11 +422,12 @@ public class WorkspaceEventsHandler {
 
                 case SNAPSHOT_CREATING:
                     loader.show(LoaderPresenter.Phase.CREATING_WORKSPACE_SNAPSHOT);
+                    snapshotNotifier.creationStarted();
                     break;
 
                 case SNAPSHOT_CREATED:
                     loader.setSuccess(LoaderPresenter.Phase.CREATING_WORKSPACE_SNAPSHOT);
-                    snapshotCreator.successfullyCreated();
+                    snapshotNotifier.successfullyCreated();
 
                     wsStartedNotification = new DelayedTask() {
                         @Override
@@ -447,7 +448,7 @@ public class WorkspaceEventsHandler {
 
                 case SNAPSHOT_CREATION_ERROR:
                     loader.setError(LoaderPresenter.Phase.CREATING_WORKSPACE_SNAPSHOT);
-                    snapshotCreator.creationError("Snapshot creation error: " + statusEvent.getError());
+                    snapshotNotifier.creationError("Snapshot creation error: " + statusEvent.getError());
                     break;
             }
         }
